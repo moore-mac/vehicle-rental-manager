@@ -5,12 +5,12 @@ app = Flask(__name__)
 
 def load_vehicles():
     global vehicles
-    with open('vehicle.csv', 'r') as f:
+    with open('backend/vehicle.csv', 'r') as f:
         reader = csv.DictReader(f)
         vehicles = list(reader)
 
 def save_vehicles():
-    with open('vehicle.csv', 'w', newline='') as f:
+    with open('backend/vehicle.csv', 'w', newline='') as f:
         if vehicles:
             writer = csv.DictWriter(f, fieldnames=vehicles[0].keys())
             writer.writeheader()
@@ -48,7 +48,7 @@ def return_vehicle():
             return jsonify({"message": "Vehicle returned successfully"})
 
 ## Add a new vehicle to the rental fleet 
-## curl "http://localhost:5000/cars/add?id=501&make=Ford&model=Fiesta&colour=Grey&vin=123456&year=2018&vrm=654321&category=Compact&numberSeats=5&dayRate=50&status=AVAILABLE&fuelEconomy=29.5&branch=Luton"
+## curl "http://localhost:5000/cars/add?id=501&make=Ford&model=Fiesta&colour=Grey&vin=B2IJ49B2B3UYIANSI&year=2018&vrm=654321&category=Compact&numberSeats=5&dayRate=50&status=AVAILABLE&fuelEconomy=29.5&branch=Luton"
 @app.route("/cars/add", methods=["GET"])
 def add_vehicle():
     new_vehicle = {
