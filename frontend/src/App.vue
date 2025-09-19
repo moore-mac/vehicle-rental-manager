@@ -1,42 +1,18 @@
 <script setup>
 import { RouterView } from "vue-router";
+import NavBar from "./components/NavBar.vue";
+import PageFooter from "./components/PageFooter.vue";
 </script>
 
 <template>
   <div>
-    <cv-header class="nav-bar">
-      <!-- TODO routing -->
-      <!-- <cv-header-name
-        href="javascript:void(0)"
-        prefix="CAR"
-        style="font-size: large"
-      >
-        GO
-      </cv-header-name> -->
-      <img
-        src="/src/assets/car-go-logo.png"
-        alt=""
-        style="
-          filter: sepia(100%) hue-rotate(175deg) saturate(1050%);
-          height: 2.5rem;
-        "
-      />
-      <cv-header-nav aria-label="Carbon nav">
-        <cv-header-menu-item href="javascript:void(0)">
-          My Fleet
-        </cv-header-menu-item>
-        <cv-header-menu-item href="javascript:void(0)">
-          Analytics
-        </cv-header-menu-item>
-        <cv-header-menu-item href="javascript:void(0)">
-          My Fleet
-        </cv-header-menu-item>
-      </cv-header-nav>
-    </cv-header>
+    <NavBar />
 
-    <cv-content>
+    <cv-content style="padding-top: 5rem">
       <RouterView />
     </cv-content>
+
+    <PageFooter />
   </div>
 </template>
 
@@ -46,5 +22,9 @@ body {
 }
 .nav-bar {
   border-color: var(--cds-border-subtle) !important;
+}
+.nav-bar-logo {
+  filter: sepia(100%) hue-rotate(175deg) saturate(1050%);
+  height: 2.5rem;
 }
 </style>
