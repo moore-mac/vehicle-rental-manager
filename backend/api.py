@@ -5,12 +5,12 @@ app = Flask(__name__)
 
 def load_vehicles():
     global vehicles
-    with open('vehicle.csv', 'r') as f:
+    with open('backend/vehicle.csv', 'r') as f:
         reader = csv.DictReader(f)
         vehicles = list(reader)
 
 def save_vehicles():
-    with open('vehicle.csv', 'w', newline='') as f:
+    with open('backend/vehicle.csv', 'w', newline='') as f:
         if vehicles:
             writer = csv.DictWriter(f, fieldnames=vehicles[0].keys())
             writer.writeheader()
