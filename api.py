@@ -16,7 +16,7 @@ def save_vehicles():
             writer.writeheader()
             writer.writerows(vehicles)
 
-## Show details of specific vehicle (according to car reg) 
+## Show details of specific vehicle by car reg 
 ## curl "http://localhost:5000/cars/show?reg=AW69DVJ"
 @app.route("/cars/show", methods=["GET"])
 def get_reg():
