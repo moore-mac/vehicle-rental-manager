@@ -1,0 +1,18 @@
+$feature-flags: (
+  enable-css-custom-properties: true,
+);
+
+@use "@carbon/themes/scss/themes" as *;
+@use "@carbon/themes";
+
+:root {
+  @include themes.theme($white);
+}
+
+// [data-carbon-theme="g100"] {
+//   @include themes.theme($g100);
+// }
+
+// body {
+//   background-color: var(--cds-background);
+// }
