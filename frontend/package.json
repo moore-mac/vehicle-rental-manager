@@ -16,6 +16,9 @@
   "dependencies": {
     "@carbon/styles": "^1.90.0",
     "@carbon/vue": "^3.0.27",
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.4",
+    "axios": "^1.12.2",
     "carbon-components": "^10.59.2",
     "carbon-icons": "^7.0.7",
     "pinia": "^3.0.3",

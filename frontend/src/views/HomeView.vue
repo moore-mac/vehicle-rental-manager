@@ -1,101 +1,201 @@
-<script setup></script>
+<script setup>
+import CheckMark16 from "@carbon/icons-vue/es/checkmark--outline/16";
+import Car from "@carbon/icons-vue/es/car/16";
+import IBMSecurity from "@carbon/icons-vue/es/ibm-security/16";
+import Time from "@carbon/icons-vue/es/time/16";
+
+import { onMounted, computed, ref } from "vue";
+import { useBranchStore } from "@/stores/branch";
+import { useVehicleStore } from "@/stores/vehicle";
+import { useRouter } from "vue-router";
+
+import useVuelidate from "@vuelidate/core";
+import { required } from "@vuelidate/validators";
+
+const router = useRouter();
+const branchStore = useBranchStore();
+const vehicleStore = useVehicleStore();
+
+const selectedBranch = ref(null);
+const dateRange = ref([null, null]);
+const driverOver25 = ref(false);
+
+const rules = {
+  selectedBranch: { required },
+};
+
+const v$ = useVuelidate(rules, { selectedBranch });
+
+onMounted(() => {
+  branchStore.fetchBranches();
+});
+
+const branchOptions = computed(() =>
+  branchStore.branches.map((branch, index) => ({
+    name: `branch-${index + 1}`,
+    label: branch,
+    value: branch,
+  }))
+);
+
+async function handleSubmit() {
+  v$.value.$touch();
+  if (!v$.value.$invalid) {
+    try {
+      await vehicleStore.fetchVehiclesByBranch(selectedBranch.value);
+      router.push({
+        path: "/results",
+        query: { branch: selectedBranch.value },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+</script>
 
 <template>
-  <cv-grid>
-    <cv-row>
-      <cv-column :lg="8" :md="8" :sm="4">
-        <cv-row class="landing-hero">
-          <cv-column :lg="6" :md="4" :sm="4">
-            <h1 class="landing-title">Drive Your Journey</h1>
-            <p class="landing-subtitle">
-              Find the perfect rental vehicle - fast, reliable, and affordable.
-            </p>
-          </cv-column>
+  <cv-grid style="overflow: hidden">
+    <img
+      class="landing-hero-background"
+      src="/src/assets/landing-hero.jpg"
+      alt="landing hero background"
+    />
 
-          <cv-column :lg="6" :md="4" :sm="4">
-            <!-- TODO add search function -->
-
-            <!-- TODO add submit and learn more functions -->
-          </cv-column>
-        </cv-row>
-        <div class="landing-car-graphic-container">
-          <img
-            src="../assets/landing-bmw.png"
-            alt="bmw pic"
-            class="landing-car-graphic"
-          />
-        </div>
-      </cv-column>
-
-      <cv-column :lg="4" :md="8" :sm="4">
-        <cv-form
-          @submit.prevent="() => {}"
-          style="
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            padding: 2rem;
-          "
-        >
-          <h3>Find a Ride</h3>
+    <cv-row class="landing-hero-row">
+      <cv-column :lg="{ span: 6, offset: 6 }" :md="8" :sm="4">
+        <cv-form @submit.prevent="handleSubmit()" class="landing-form">
+          <h1>Find a Ride</h1>
           <cv-combo-box
-            title="Collect From"
+            title="Collect From *"
             label="City"
-            :options="[
-              { name: 'something-1', label: 'London', value: 'val-1' },
-            ]"
-            value="21"
-            :is-light="false"
+            :options="branchOptions"
+            v-model="selectedBranch"
+            :invalid-message="
+              v$.selectedBranch.$error ? 'Branch is required' : ''
+            "
           ></cv-combo-box>
 
-          <!-- TODO add vmodel -->
-          <div style="display: flex; flex-direction: row; gap: 1rem">
-            <cv-date-picker
-              dateLabel="Date From"
-              dateEndLabel="Date To"
-              :cal-options="{ dateFormat: 'd/m/Y' }"
-              placeholder="dd-mm-yyyy"
-              invalidMessage=""
-              kind="range"
-              :light="false"
-            >
-            </cv-date-picker>
-          </div>
+          <cv-date-picker
+            dateLabel="Date From"
+            dateEndLabel="Date To"
+            :cal-options="{ dateFormat: 'd/m/Y' }"
+            placeholder="dd-mm-yyyy"
+            kind="range"
+            v-model="dateRange"
+          ></cv-date-picker>
+
           <cv-checkbox
             label="Driver aged over 25"
-            @change="() => {}"
+            value="yes"
+            v-model="driverOver25"
             :inline="true"
           ></cv-checkbox>
 
           <div>
             <cv-button kind="primary">Submit</cv-button>
-            <cv-button kind="secondary">Learn More</cv-button>
+
+            <cv-button kind="secondary" href="#why-choose-us"
+              >Learn More</cv-button
+            >
           </div>
         </cv-form>
       </cv-column>
     </cv-row>
 
-    <img src="/src/assets/landing-bmw.png" alt="" style="width: 40%" />
-    <img
-      src="/src/assets/tiles.png"
-      alt=""
-      style="
-        width: 50%;
-        float: right;
-        border-bottom: 1px solid var(--cds-border-subtle-01);
-      "
-    />
-    <!-- <img src="/src/assets/c-test.png" alt="" style="width: 100%" /> -->
-    <img src="/src/assets/stay.png" alt="" style="width: 100%" />
+    <cv-row class="landing-title-row">
+      <cv-column :lg="6" :md="8" :sm="4">
+        <h1 class="landing-title">Drive Your Journey.</h1>
+        <p class="landing-subtitle">
+          Find the perfect rental vehicle - fast, reliable, and affordable.
+        </p>
+      </cv-column>
+    </cv-row>
+
+    <cv-row class="landing-tile-row">
+      <cv-column class="landing-tile-container">
+        <cv-tile
+          :light="true"
+          kind="clickable"
+          @click="() => {}"
+          class="landing-tile"
+        >
+          Luxury
+        </cv-tile>
+        <cv-tile
+          :light="true"
+          kind="clickable"
+          @click="() => {}"
+          class="landing-tile"
+        >
+          SUV
+        </cv-tile>
+        <cv-tile
+          :light="true"
+          kind="clickable"
+          @click="() => {}"
+          class="landing-tile"
+        >
+          Electric
+        </cv-tile>
+        <cv-tile
+          :light="true"
+          kind="clickable"
+          @click="() => {}"
+          class="landing-tile"
+        >
+          Economy
+        </cv-tile>
+      </cv-column>
+    </cv-row>
+
+    <cv-row class="why-choose-us-row">
+      <cv-column :lg="7" :md="4" :sm="2">
+        <h1 id="why-choose-us">Why Choose Us?</h1>
+        <div class="landing-selling-points-container">
+          <h4><CheckMark16 class="landing-icon" />Free Cancellation</h4>
+
+          <h4><Car class="landing-icon" />Wide Selection of Cars</h4>
+
+          <h4><IBMSecurity class="landing-icon" />Secure Payments</h4>
+
+          <h4><Time class="landing-icon" /> 24/7 Roadside Assistance</h4>
+        </div>
+      </cv-column>
+      <cv-column :lg="5" :md="4" :sm="2" class="landing-car-logo-container">
+        <img src="/src/assets/bmw-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/ford-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/mercedes-logo.jpeg" class="landing-car-logo" />
+        <img src="/src/assets/porsche-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/vw-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/audi-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/honda-logo.png" class="landing-car-logo" />
+        <img src="/src/assets/toyota-logo.png" class="landing-car-logo" />
+      </cv-column>
+    </cv-row>
+
+    <img src="/src/assets/stay.png" style="width: 100%" />
   </cv-grid>
 </template>
 
 <style scoped>
-.landing-hero {
-  /* background-color: var(--cds-layer-01); */
-  /* border: 1px solid var(--cds-border-subtle-01); */
-  padding: 1rem 2rem 5rem 3rem;
-  /* box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.2); */
+.landing-hero-background {
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 30rem;
+  object-fit: cover;
+  left: 0;
+  top: 3rem;
+}
+.landing-hero-row {
+  padding: 5rem;
+  position: relative;
+  margin-bottom: 4rem;
+  max-height: 30rem;
+}
+.landing-title-row {
+  margin-bottom: 4rem;
 }
 .landing-title {
   margin-bottom: 1rem;
@@ -105,16 +205,70 @@
   margin-bottom: 1rem;
   color: var(--cds-interactive);
 }
-.landing-car-graphic-container {
-  width: 100%;
+.landing-form {
+  margin-top: 5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: var(--cds-background);
+}
+.landing-tile-row {
+  margin-bottom: 4rem;
+}
+.landing-tile-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.landing-tile {
+  flex: 1 1 13rem;
+  min-width: 13rem;
+  max-width: 25%;
+  border: 1px solid var(--cds-border-subtle-01);
+  height: 13.4rem;
+}
+.landing-selling-points-container {
+  display: grid;
+  padding-top: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 75%;
+  gap: 2rem;
+}
+.landing-selling-points-container > {
+  display: block;
+}
+.landing-icon {
+  fill: var(--cds-interactive);
+  height: 1.5rem;
+  width: auto;
+  margin: 0 1rem 0 0;
+}
+.landing-car-logo-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
   justify-content: center;
+  padding-top: 2rem;
 }
-.landing-car-graphic {
+.landing-car-logo {
+  height: 3rem;
   width: auto;
-  height: 50%;
-  filter: blur(0.5px);
-  display: none;
+}
+.why-choose-us-row {
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 1055px) {
+  .landing-tile-container,
+  .landing-selling-points-container {
+    grid-template-columns: 1fr;
+  }
+  .landing-title-row {
+    margin-top: 10rem;
+    text-align: center;
+  }
 }
 </style>

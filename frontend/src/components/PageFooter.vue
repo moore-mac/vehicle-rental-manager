@@ -1,16 +1,11 @@
-<script setup>
-import { RouterLink } from "vue-router";
-</script>
+<script setup></script>
 
 <template>
   <div class="footer">
-    <p>© 2024 Car Go. All rights reserved.</p>
-    <div class="footer-links">
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/about">About Us</RouterLink>
-      <RouterLink to="/contact">Contact</RouterLink>
-      <RouterLink to="/privacy">Privacy Policy</RouterLink>
-    </div>
+    <p>Home</p>
+    <p>About Us</p>
+    <p>Contact</p>
+    <p>Privacy Policy</p>
   </div>
 </template>
 
@@ -18,11 +13,19 @@ import { RouterLink } from "vue-router";
 .footer {
   background-color: #161616;
   border-top: 1px solid var(--cds-border-subtle-01);
-  padding: 1rem 2rem;
-  text-align: center;
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
   position: relative;
-  bottom: 0;
   width: 100%;
-  height: 15rem;
+  min-height: 15rem;
+  margin-top: 4rem;
+}
+.footer p {
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--cds-text-inverse);
 }
 </style>

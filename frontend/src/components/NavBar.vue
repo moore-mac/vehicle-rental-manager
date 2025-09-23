@@ -1,5 +1,4 @@
 <script setup>
-import { RouterLink } from "vue-router";
 import { ref } from "vue";
 
 const searchInput = ref("");
@@ -47,7 +46,8 @@ const searchInput = ref("");
   align-items: center;
   background-color: var(--cds-background);
   position: fixed;
-  /* border-bottom: 1px solid var(--cds-border-subtle-01); */
+  z-index: 9999;
+  border-bottom: 1px solid var(--cds-border-subtle-01);
 }
 .nav-bar-logo {
   height: 2.5rem;
@@ -63,13 +63,12 @@ const searchInput = ref("");
 .nav-bar-menu {
   display: flex;
   flex-direction: row;
-  gap: 2rem;
   font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   /* padding-right: 2rem; */
 }
 .nav-bar-menu-item {
   width: fit-content;
-  padding: 1rem;
+  padding: 1rem 2rem 1rem 2rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
