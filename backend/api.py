@@ -8,7 +8,7 @@ vehicles = []
 customers = []
 
 def load_customers():
-    """Load customers from CSV file"""
+# Load customers from CSV file
     global customers
     try:
         with open('customer.csv', 'r') as f:
@@ -18,7 +18,7 @@ def load_customers():
         customers = []
 
 def save_customers():
-    """Save customers to CSV file"""
+# Save customers to CSV file
     if customers:
         with open('customer.csv', 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=customers[0].keys())
@@ -429,14 +429,7 @@ def get_rental_analytics():
         "rentals_by_branch": rentals_by_branch
     })
 
-## Initialize data
-def initialize():
-    """Load both vehicles and customers when the app starts"""
-    with app.app_context():
-        load_vehicles()
-        load_customers()
-
 if __name__ == '__main__':
     load_vehicles()
+    load_customers()
     app.run(debug=True)
-
