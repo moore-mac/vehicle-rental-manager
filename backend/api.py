@@ -130,6 +130,19 @@ def show_branch():
                 branches[branch].append(v)
             return jsonify(branches)
 
+
+## Additional Endpoints
+
+## Get list of branches
+## curl "http://localhost:5000/cars/branch-list"
+@app.route("/cars/branch-list", methods=["GET"])
+def get_branches():
+    branches = []
+    for v in vehicles:
+        if v["branch"] not in branches:
+            branches.append(v["branch"])
+    return jsonify(branches)
+
 ## Edit a vehicle's details
 ## curl "http://localhost:5000/cars/edit?reg=AW69DVJ&colour=Blue&dayRate=60&branch=Manchester"
 @app.route("/cars/edit", methods=["GET", "POST", "PUT"])
