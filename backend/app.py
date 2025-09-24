@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from routes.vehicle_routes import vehicle_bp
 from routes.analytics_routes import analytics_bp
-from models.data import load_vehicles, load_customers
+from utils.data_handler import load_vehicles, load_customers
 
 app = Flask(__name__)
 CORS(app)
