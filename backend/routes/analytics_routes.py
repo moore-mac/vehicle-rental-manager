@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models.data import vehicles
+from utils.data_handler import vehicles
 
 analytics_bp = Blueprint('analytics', __name__)
 
