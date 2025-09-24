@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from utils.data_handler import vehicles, save_vehicles
+import utils.data_handler as data
 
 vehicle_bp = Blueprint('vehicles', __name__)
 
@@ -8,9 +8,10 @@ vehicle_bp = Blueprint('vehicles', __name__)
 @vehicle_bp.route("/cars/show", methods=["GET"])
 def get_reg():
     vehicle_reg = request.args.get("reg")
-    for v in vehicles:
-        if v["vrm"] == vehicle_reg:
+    for v in data.vehicles:
+        if v["vrm"].strip() == vehicle_reg:
             return jsonify(v)
+    return jsonify({"error": "Vehicle not found"}), 404
 
 
 ## Rent a specific vehicle
@@ -18,11 +19,12 @@ def get_reg():
 @vehicle_bp.route("/cars/rent", methods=["GET"])
 def rent_vehicle():
     vehicle_reg = request.args.get("reg")
-    for v in vehicles:
-        if v["vrm"] == vehicle_reg:
+    for v in data.vehicles:
+        if v["vrm"].strip() == vehicle_reg:
             v["status"] = "RENTED"
-            save_vehicles()
+            data.save_vehicles()
             return jsonify({"message": "Vehicle rented successfully"})
+    return jsonify({"error": "Vehicle not found"}), 404
 
 
 ## Return a specific vehicle
@@ -30,11 +32,12 @@ def rent_vehicle():
 @vehicle_bp.route("/cars/return", methods=["GET"])
 def return_vehicle():
     vehicle_reg = request.args.get("reg")
-    for v in vehicles:
-        if v["vrm"] == vehicle_reg:
+    for v in data.vehicles:
+        if v["vrm"].strip() == vehicle_reg:
             v["status"] = "AVAILABLE"
-            save_vehicles()
+            data.save_vehicles()
             return jsonify({"message": "Vehicle returned successfully"})
+    return jsonify({"error": "Vehicle not found"}), 404
 
 
 ## Add a new vehicle to the rental fleet
@@ -56,8 +59,8 @@ def add_vehicle():
         "fuelEconomy": request.args.get("fuelEconomy"),
         "branch": request.args.get("branch"),
     }
-    vehicles.append(new_vehicle)
-    save_vehicles()
+    data.vehicles.append(new_vehicle)
+    data.save_vehicles()
     return jsonify({"message": "Vehicle added successfully"})
 
 
@@ -66,9 +69,8 @@ def add_vehicle():
 @vehicle_bp.route("/cars/remove", methods=["GET"])
 def remove_vehicle():
     vehicle_reg = request.args.get("reg")
-    global vehicles
-    vehicles = [v for v in vehicles if v["vrm"] != vehicle_reg]
-    save_vehicles()
+    data.vehicles[:] = [v for v in data.vehicles if v["vrm"].strip() != vehicle_reg]
+    data.save_vehicles()
     return jsonify({"message": "Vehicle removed successfully"})
 
 
@@ -76,7 +78,7 @@ def remove_vehicle():
 ## curl "http://localhost:5000/cars/all"
 @vehicle_bp.route("/cars/all", methods=["GET"])
 def show_all_vehicle():
-    return jsonify(vehicles)
+    return jsonify(data.vehicles)
 
 
 ## Show all vehicles available to rent
@@ -84,22 +86,22 @@ def show_all_vehicle():
 @vehicle_bp.route("/cars/available", methods=["GET"])
 def show_available():
     available_vehicles = []
-    for v in vehicles:
+    for v in data.vehicles:
         if v["status"] == "AVAILABLE":
             available_vehicles.append(v)
     return jsonify(available_vehicles)
 
-
-@vehicle_bp.route("/cars/fetch_by_branch", methods=["GET"])
-def fetch_by_branch():
-    branch = request.args.get("branch")
-
-    if not branch:
-        return jsonify({"error": "branch query parameter is required"}), 400
-
-    filtered_vehicles = [v for v in vehicles if v["branch"] == branch]
-
-    return jsonify(filtered_vehicles)
+## Show all vehicles by branch
+## curl "http://localhost:5000/cars/branch"
+@vehicle_bp.route("/cars/branch", methods=["GET"])
+def show_branch():
+            branches = {}
+            for v in data.vehicles:
+                branch = v["branch"]
+                if branch not in branches:
+                    branches[branch] = []
+                branches[branch].append(v)
+            return jsonify(branches)
 
 
 ## Additional Endpoints
@@ -110,11 +112,10 @@ def fetch_by_branch():
 @vehicle_bp.route("/cars/branch-list", methods=["GET"])
 def get_branches():
     branches = []
-    for v in vehicles:
+    for v in data.vehicles:
         if v["branch"] not in branches:
             branches.append(v["branch"])
     return jsonify(branches)
-
 
 ## Search vehicles by various criteria
 ## curl "http://localhost:5000/cars/search?query=Toyota&branch=London&status=AVAILABLE"
@@ -127,7 +128,7 @@ def search_vehicles():
     max_price = request.args.get("max_price")
 
     results = []
-    for vehicle in vehicles:
+    for vehicle in data.vehicles:
         # If no search criteria provided, skip this vehicle
         if not any([query, branch, status, category, max_price]):
             continue
