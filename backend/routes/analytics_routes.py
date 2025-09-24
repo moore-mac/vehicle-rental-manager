@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from utils.data_handler import vehicles
+import utils.data_handler as data
 
 analytics_bp = Blueprint('analytics', __name__)
 
@@ -7,16 +7,16 @@ analytics_bp = Blueprint('analytics', __name__)
 ## curl "http://localhost:5000/analytics/fleet"
 @analytics_bp.route("/analytics/fleet", methods=["GET"])
 def get_fleet_analytics():
-    total_vehicles = len(vehicles)
-    available_count = sum(1 for v in vehicles if v["status"] == "AVAILABLE")
-    rented_count = sum(1 for v in vehicles if v["status"] == "RENTED")
+    total_vehicles = len(data.vehicles)
+    available_count = sum(1 for v in data.vehicles if v["status"] == "AVAILABLE")
+    rented_count = sum(1 for v in data.vehicles if v["status"] == "RENTED")
 
     # Calculate fleet composition
     makes_count = {}
     categories_count = {}
     branch_stats = {}
 
-    for v in vehicles:
+    for v in data.vehicles:
         # Count by make
         makes_count[v["make"]] = makes_count.get(v["make"], 0) + 1
 
@@ -37,7 +37,7 @@ def get_fleet_analytics():
     # Calculate average day rate
     try:
         avg_day_rate = (
-            sum(float(v["dayRate"]) for v in vehicles if v["dayRate"]) / total_vehicles
+            sum(float(v["dayRate"]) for v in data.vehicles if v["dayRate"]) / total_vehicles
         )
     except (ValueError, ZeroDivisionError):
         avg_day_rate = 0
@@ -70,7 +70,7 @@ def get_branch_analytics():
     if not branch_name:
         return jsonify({"error": "Branch name is required"}), 400
 
-    branch_vehicles = [v for v in vehicles if v["branch"] == branch_name]
+    branch_vehicles = [v for v in data.vehicles if v["branch"] == branch_name]
     if not branch_vehicles:
         return jsonify({"error": "Branch not found"}), 404
 
@@ -108,9 +108,9 @@ def get_branch_analytics():
 ## curl "http://localhost:5000/analytics/rentals"
 @analytics_bp.route("/analytics/rentals", methods=["GET"])
 def get_rental_analytics():
-    rented_vehicles = [v for v in vehicles if v["status"] == "RENTED"]
+    rented_vehicles = [v for v in data.vehicles if v["status"] == "RENTED"]
     current_rentals = len(rented_vehicles)
-    total_vehicles = len(vehicles)
+    total_vehicles = len(data.vehicles)
 
     # Calculate rental statistics by category
     rentals_by_category = {}
