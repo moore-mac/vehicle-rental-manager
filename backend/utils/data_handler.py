@@ -6,7 +6,7 @@ customers = []
 
 
 def load_customers():
-    # Load customers from CSV file
+# Load customers from CSV file
     global customers
     try:
         with open("customer.csv", "r") as f:
@@ -17,7 +17,7 @@ def load_customers():
 
 
 def save_customers():
-    # Save customers to CSV file
+# Save customers to CSV file
     if customers:
         with open("customer.csv", "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=customers[0].keys())
