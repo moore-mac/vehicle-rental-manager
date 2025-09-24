@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 import utils.data_handler as data
 
-vehicle_bp = Blueprint('vehicles', __name__)
+vehicle_bp = Blueprint("vehicles", __name__)
+
 
 ## Show details of specific vehicle by car reg
 ## curl "http://localhost:5000/cars/show?reg=AW69DVJ"
@@ -23,7 +24,7 @@ def rent_vehicle():
         if v["vrm"].strip() == vehicle_reg:
             v["status"] = "RENTED"
             data.save_vehicles()
-            return jsonify({"message": "Vehicle rented successfully"})
+            return jsonify(v)
     return jsonify({"error": "Vehicle not found"}), 404
 
 
@@ -36,7 +37,7 @@ def return_vehicle():
         if v["vrm"].strip() == vehicle_reg:
             v["status"] = "AVAILABLE"
             data.save_vehicles()
-            return jsonify({"message": "Vehicle returned successfully"})
+            return jsonify(v)
     return jsonify({"error": "Vehicle not found"}), 404
 
 
@@ -91,20 +92,41 @@ def show_available():
             available_vehicles.append(v)
     return jsonify(available_vehicles)
 
+
 ## Show all vehicles by branch
 ## curl "http://localhost:5000/cars/branch"
 @vehicle_bp.route("/cars/branch", methods=["GET"])
 def show_branch():
-            branches = {}
-            for v in data.vehicles:
-                branch = v["branch"]
-                if branch not in branches:
-                    branches[branch] = []
-                branches[branch].append(v)
-            return jsonify(branches)
+    branches = {}
+    for v in data.vehicles:
+        branch = v["branch"]
+        if branch not in branches:
+            branches[branch] = []
+        branches[branch].append(v)
+    return jsonify(branches)
 
 
 ## Additional Endpoints
+
+
+## Get vehicles by category
+## curl "http://localhost:5000/cars/category?category=Compact"
+@vehicle_bp.route("/cars/category", methods=["GET"])
+def get_vehicles_by_category():
+    category = request.args.get("category")
+    category_vehicles = [v for v in data.vehicles if v["category"] == category]
+    return jsonify(category_vehicles)
+
+
+## Get list of categories
+## curl "http://localhost:5000/cars/category-list"
+@vehicle_bp.route("/cars/category-list", methods=["GET"])
+def get_categories():
+    categories = []
+    for v in data.vehicles:
+        if v["category"] not in categories:
+            categories.append(v["category"])
+    return jsonify(categories)
 
 
 ## Get list of branches
@@ -117,11 +139,12 @@ def get_branches():
             branches.append(v["branch"])
     return jsonify(branches)
 
+
 ## Search vehicles by various criteria
 ## curl "http://localhost:5000/cars/search?query=Toyota&branch=London&status=AVAILABLE"
 @vehicle_bp.route("/cars/search", methods=["GET"])
 def search_vehicles():
-    query = request.args.get("query", "").lower()
+    query = request.args.get("query", "").strip().lower()
     branch = request.args.get("branch")
     status = request.args.get("status")
     category = request.args.get("category")
@@ -129,23 +152,15 @@ def search_vehicles():
 
     results = []
     for vehicle in data.vehicles:
-        # If no search criteria provided, skip this vehicle
-        if not any([query, branch, status, category, max_price]):
-            continue
-
         matches = True
 
-        # Check text search across multiple fields
         if query:
-            text_match = False
             search_fields = ["make", "model", "colour", "vrm", "category", "branch"]
-            for field in search_fields:
-                if query in str(vehicle.get(field, "")).lower():
-                    text_match = True
-                    break
+            text_match = any(
+                query in str(vehicle.get(f, "")).lower() for f in search_fields
+            )
             matches = matches and text_match
 
-        # Check exact matches
         if branch:
             matches = matches and vehicle.get("branch") == branch
         if status:
@@ -157,22 +172,28 @@ def search_vehicles():
                 matches = matches and float(vehicle.get("dayRate", 0)) <= float(
                     max_price
                 )
-            except ValueError:
+            except (ValueError, TypeError):
                 continue
 
         if matches:
             results.append(vehicle)
 
+    filters_used = {}
+    if query:
+        filters_used["query"] = query
+    if branch:
+        filters_used["branch"] = branch
+    if status:
+        filters_used["status"] = status
+    if category:
+        filters_used["category"] = category
+    if max_price:
+        filters_used["max_price"] = max_price
+
     return jsonify(
         {
             "results": results,
             "count": len(results),
-            "filters_used": {
-                "query": query if query else None,
-                "branch": branch,
-                "status": status,
-                "category": category,
-                "max_price": max_price,
-            },
+            "filters_used": filters_used,
         }
     )

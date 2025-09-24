@@ -6,13 +6,15 @@ const searchInput = ref("");
 
 <template>
   <div class="nav-bar">
-    <!-- TODO routing -->
     <img
       src="/src/assets/car-go-logo.png"
       alt="car go logo"
       class="nav-bar-logo"
       @click="$router.push('/')"
-    /><cv-search
+    />
+
+    <!-- TODO -->
+    <cv-search
       v-model="searchInput"
       label="search"
       placeholder="Make, Model, Location..."
@@ -22,6 +24,7 @@ const searchInput = ref("");
       @input="searchInput = input"
     >
     </cv-search>
+
     <div class="nav-bar-menu">
       <div class="nav-bar-menu-item" @click="$router.push('/my-fleet')">
         My Fleet
@@ -29,10 +32,12 @@ const searchInput = ref("");
       <div class="nav-bar-menu-item" @click="$router.push('/analytics')">
         Analytics
       </div>
-      <div class="nav-bar-menu-item" @click="$router.push('/')">
+      <div class="nav-bar-menu-item disabled" @click="$router.push('/')">
         My Bookings
       </div>
-      <div class="nav-bar-menu-item" @click="$router.push('/')">Settings</div>
+      <div class="nav-bar-menu-item disabled" @click="$router.push('/')">
+        Settings
+      </div>
     </div>
   </div>
 </template>
@@ -74,5 +79,9 @@ const searchInput = ref("");
 }
 .nav-bar-menu-item:hover {
   background-color: lightgray;
+}
+.nav-bar-menu-item.disabled {
+  color: gray;
+  cursor: not-allowed;
 }
 </style>

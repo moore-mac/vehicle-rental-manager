@@ -9,10 +9,27 @@ const vehicleStore = useVehicleStore();
 const selectedVehicle = computed(() => vehicleStore.selectedVehicle);
 
 onMounted(async () => {
-  if (!vehicleStore.selectedVehicle) {
-    await vehicleStore.getByReg(route.query.vrm || "");
-  }
+  vehicleStore.selectedVehicle = await vehicleStore.fetchByReg(
+    route.query.vrm || ""
+  );
 });
+
+async function handleRent(vehicle) {
+  if (vehicle && vehicle.status === "AVAILABLE") {
+    vehicleStore.selectedVehicle = (
+      await vehicleStore.rentVehicle(vehicle.vrm)
+    )?.data;
+    alert("Vehicle rented successfully!");
+  }
+}
+async function handleReturn(vehicle) {
+  if (vehicle && vehicle.status === "RENTED") {
+    vehicleStore.selectedVehicle = (
+      await vehicleStore.returnVehicle(vehicle.vrm)
+    )?.data;
+    alert("Vehicle returned successfully!");
+  }
+}
 </script>
 
 <template>
@@ -24,7 +41,12 @@ onMounted(async () => {
             >Home</cv-breadcrumb-item
           >
 
-          <cv-breadcrumb-item @click="$router.push('/results')"
+          <cv-breadcrumb-item
+            @click="
+              $router.push({
+                path: '/results',
+              })
+            "
             >Search</cv-breadcrumb-item
           >
         </cv-breadcrumb>
@@ -82,6 +104,21 @@ onMounted(async () => {
             </div>
           </div>
         </div>
+
+        <cv-button-set>
+          <cv-button
+            kind="primary"
+            :disabled="selectedVehicle?.status !== 'AVAILABLE'"
+            @click="handleRent(selectedVehicle)"
+            >Rent</cv-button
+          >
+          <cv-button
+            kind="secondary"
+            @click="handleReturn(selectedVehicle)"
+            :disabled="selectedVehicle?.status !== 'RENTED'"
+            >Return</cv-button
+          >
+        </cv-button-set>
       </cv-column>
     </cv-row>
   </cv-grid>
@@ -95,6 +132,7 @@ onMounted(async () => {
 .vehicle-card {
   background: var(--cds-layer-01);
   padding: 2rem;
+  margin-bottom: 2rem;
 }
 
 .vehicle-title {

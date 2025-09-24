@@ -28,6 +28,7 @@ const v$ = useVuelidate(rules, { selectedBranch });
 
 onMounted(() => {
   branchStore.fetchBranches();
+  vehicleStore.fetchCategories();
 });
 
 const branchOptions = computed(() =>
@@ -42,7 +43,6 @@ async function handleSubmit() {
   v$.value.$touch();
   if (!v$.value.$invalid) {
     try {
-      await vehicleStore.fetchVehiclesByBranch(selectedBranch.value);
       router.push({
         path: "/results",
         query: { branch: selectedBranch.value },
@@ -52,6 +52,24 @@ async function handleSubmit() {
     }
   }
 }
+
+async function handleCategorySearch(category) {
+  try {
+    router.push({
+      path: "/results",
+      query: { category },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const scrollToId = (id) => {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
 </script>
 
 <template>
@@ -64,7 +82,7 @@ async function handleSubmit() {
 
     <cv-row class="landing-hero-row">
       <cv-column :lg="{ span: 6, offset: 6 }" :md="8" :sm="4">
-        <cv-form @submit.prevent="handleSubmit()" class="landing-form">
+        <cv-form @submit.prevent="" class="landing-form">
           <h1>Find a Ride</h1>
           <cv-combo-box
             title="Collect From *"
@@ -75,6 +93,8 @@ async function handleSubmit() {
               v$.selectedBranch.$error ? 'Branch is required' : ''
             "
           ></cv-combo-box>
+
+          <!-- TODO add selected category -->
 
           <cv-date-picker
             dateLabel="Date From"
@@ -93,10 +113,10 @@ async function handleSubmit() {
           ></cv-checkbox>
 
           <div>
-            <cv-button kind="primary">Submit</cv-button>
+            <cv-button kind="primary" @click="handleSubmit()">Submit</cv-button>
 
-            <cv-button kind="secondary" href="#why-choose-us"
-              >Learn More</cv-button
+            <cv-button kind="tertiary" @click="scrollToId('why-choose-us')"
+              >Why Choose Us?</cv-button
             >
           </div>
         </cv-form>
@@ -115,43 +135,23 @@ async function handleSubmit() {
     <cv-row class="landing-tile-row">
       <cv-column class="landing-tile-container">
         <cv-tile
+          v-for="(category, index) in vehicleStore.categories"
+          :key="index"
           :light="true"
           kind="clickable"
-          @click="() => {}"
+          @click="handleCategorySearch(category)"
           class="landing-tile"
         >
-          Luxury
-        </cv-tile>
-        <cv-tile
-          :light="true"
-          kind="clickable"
-          @click="() => {}"
-          class="landing-tile"
-        >
-          SUV
-        </cv-tile>
-        <cv-tile
-          :light="true"
-          kind="clickable"
-          @click="() => {}"
-          class="landing-tile"
-        >
-          Electric
-        </cv-tile>
-        <cv-tile
-          :light="true"
-          kind="clickable"
-          @click="() => {}"
-          class="landing-tile"
-        >
-          Economy
+          <h4 class="landing-tile-text">
+            {{ category }}
+          </h4>
         </cv-tile>
       </cv-column>
     </cv-row>
 
-    <cv-row class="why-choose-us-row">
+    <cv-row class="why-choose-us-row" id="why-choose-us">
       <cv-column :lg="7" :md="4" :sm="2">
-        <h1 id="why-choose-us">Why Choose Us?</h1>
+        <h1>Why Choose Us?</h1>
         <div class="landing-selling-points-container">
           <h4><CheckMark16 class="landing-icon" />Free Cancellation</h4>
 
@@ -174,6 +174,7 @@ async function handleSubmit() {
       </cv-column>
     </cv-row>
 
+    <!-- TODO replace with something else -->
     <img src="/src/assets/stay.png" style="width: 100%" />
   </cv-grid>
 </template>
@@ -221,11 +222,18 @@ async function handleSubmit() {
   flex-wrap: wrap;
 }
 .landing-tile {
-  flex: 1 1 13rem;
-  min-width: 13rem;
-  max-width: 25%;
+  flex: 0 0 25%;
+  box-sizing: border-box;
   border: 1px solid var(--cds-border-subtle-01);
   height: 13.4rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.landing-tile-text {
+  color: var(--cds-interactive);
+  font-weight: 300;
 }
 .landing-selling-points-container {
   display: grid;

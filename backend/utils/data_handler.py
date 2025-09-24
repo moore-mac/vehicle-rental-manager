@@ -6,7 +6,7 @@ customers = []
 
 
 def load_customers():
-# Load customers from CSV file
+    # Load customers from CSV file
     global customers
     try:
         with open("customer.csv", "r") as f:
@@ -17,7 +17,7 @@ def load_customers():
 
 
 def save_customers():
-# Save customers to CSV file
+    # Save customers to CSV file
     if customers:
         with open("customer.csv", "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=customers[0].keys())
@@ -27,13 +27,13 @@ def save_customers():
 
 def load_vehicles():
     global vehicles
-    with open("backend/data/vehicle.csv", "r") as f:
+    with open("data/vehicle.csv", "r") as f:
         reader = csv.DictReader(f)
         vehicles = list(reader)
 
 
 def save_vehicles():
-    with open("backend/data/vehicle.csv", "w", newline="") as f:
+    with open("data/vehicle.csv", "w", newline="") as f:
         if vehicles:
             writer = csv.DictWriter(f, fieldnames=vehicles[0].keys())
             writer.writeheader()

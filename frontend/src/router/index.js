@@ -1,8 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import SearchResults from "@/views/SearchResults.vue";
-import PageNotFound from "../views/PageNotFound.vue";
-import VehicleDetails from "@/views/VehicleDetails.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,22 +6,32 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView,
+      component: () => import("@/views/HomeView.vue"),
     },
     {
       path: "/results",
       name: "results",
-      component: SearchResults,
+      component: () => import("@/views/SearchResults.vue"),
     },
     {
       path: "/vehicle",
       name: "vehicle-details",
-      component: VehicleDetails,
+      component: () => import("@/views/VehicleDetails.vue"),
+    },
+    {
+      path: "/my-fleet",
+      name: "my-fleet",
+      component: () => import("@/views/MyFleet.vue"),
+    },
+    {
+      path: "/analytics",
+      name: "analytics",
+      component: () => import("@/views/AnalyticsView.vue"),
     },
     {
       path: "/:pathMatch(.*)*", // catch-all route
       name: "NotFound",
-      component: PageNotFound,
+      component: () => import("@/views/PageNotFound.vue"),
     },
   ],
 });

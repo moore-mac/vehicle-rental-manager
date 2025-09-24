@@ -9,13 +9,37 @@ const route = useRoute();
 const vehicleStore = useVehicleStore();
 const results = computed(() => vehicleStore.vehicles);
 
+const statusColourMap = {
+  AVAILABLE: "green",
+  RENTED: "red",
+  SERVICEREQ: "red",
+  DAMAGED: "red",
+};
+
+const statusLabelMap = {
+  AVAILABLE: "Available",
+  RENTED: "Rented",
+  SERVICEREQ: "Service Required",
+  DAMAGED: "Damaged",
+};
+
 onMounted(async () => {
   try {
-    if (!vehicleStore.vehicles.length) {
-      await vehicleStore.fetchVehiclesByBranch(route.query.branch);
+    let queryToUse = route.query;
+
+    if (!queryToUse || Object.keys(queryToUse).length === 0) {
+      const savedQuery = localStorage.getItem("previousRouteQuery");
+      if (savedQuery) {
+        queryToUse = JSON.parse(savedQuery);
+        router.replace({ path: "/results", query: queryToUse });
+      }
+    } else {
+      localStorage.setItem("previousRouteQuery", JSON.stringify(queryToUse));
     }
+
+    await vehicleStore.searchVehicles(queryToUse);
   } catch (error) {
-    console.log(error);
+    console.error("Failed to fetch vehicles:", error);
   }
 });
 
@@ -28,57 +52,47 @@ function viewDetails(vehicle) {
   <cv-grid>
     <cv-row class="search-results-row">
       <cv-column>
-        <cv-heading level="1">Search Results</cv-heading>
+        <cv-breadcrumb :no-trailing-slash="false">
+          <cv-breadcrumb-item @click="$router.push('/')">
+            Home
+          </cv-breadcrumb-item>
+        </cv-breadcrumb>
+
+        <h1>Search Results</h1>
 
         <!-- Loading -->
-        <cv-loading
-          v-if="!results || results.length === 0"
-          description="Loading vehicles..."
-        />
+        <div class="loading-wheel" v-if="!results || results.length === 0">
+          <cv-loading description="Loading vehicles..." />
+        </div>
 
         <!-- Results -->
         <div v-else>
-          <p class="results-summary">
-            {{ results.length }} vehicles found in
-            <strong>{{ route.query.branch }}</strong>
-          </p>
+          <p class="results-summary">{{ results.length }} vehicles found</p>
 
-          <cv-grid>
-            <cv-row>
-              <cv-column
+          <cv-row>
+            <cv-column class="results-tile-container">
+              <cv-tile
                 v-for="vehicle in results"
                 :key="vehicle.vrm"
-                sm="4"
-                md="4"
-                lg="8"
+                kind="clickable"
+                @click="viewDetails(vehicle)"
+                class="vehicle-tile"
               >
-                <cv-tile
-                  kind="clickable"
-                  @click="viewDetails(vehicle)"
-                  class="vehicle-tile"
-                >
-                  <cv-heading level="3" class="vehicle-title">
-                    {{ vehicle.make }} {{ vehicle.model }}
-                  </cv-heading>
-                  <p class="vehicle-subtitle">
-                    Year: {{ vehicle.year }} · Seats: {{ vehicle.numberSeats }}
-                  </p>
-                  <p class="vehicle-branch">Branch: {{ vehicle.branch }}</p>
-                  <cv-tag
-                    :type="
-                      vehicle.status === 'AVAILABLE'
-                        ? 'green'
-                        : vehicle.status === 'DAMAGED'
-                          ? 'red'
-                          : 'warm-gray'
-                    "
-                  >
-                    {{ vehicle.status }}
-                  </cv-tag>
-                </cv-tile>
-              </cv-column>
-            </cv-row>
-          </cv-grid>
+                <h3 class="vehicle-title">
+                  {{ vehicle.make }} {{ vehicle.model }}
+                </h3>
+                <p>
+                  Year: {{ vehicle.year }} · Seats: {{ vehicle.numberSeats }}
+                </p>
+                <p>Branch: {{ vehicle.branch }}</p>
+                <cv-tag
+                  style="cursor: pointer"
+                  :kind="statusColourMap[vehicle.status]"
+                  :label="statusLabelMap[vehicle.status]"
+                />
+              </cv-tile>
+            </cv-column>
+          </cv-row>
         </div>
       </cv-column>
     </cv-row>
@@ -89,30 +103,27 @@ function viewDetails(vehicle) {
 .search-results-row {
   margin-bottom: 4rem;
 }
-
+.loading-wheel {
+  position: absolute;
+  top: 40%;
+  left: 45%;
+}
 .results-summary {
   margin-bottom: 1.5rem;
   font-size: 1rem;
   color: #525252;
 }
-
+.results-tile-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
 .vehicle-tile {
   margin-bottom: 1rem;
   padding: 1rem;
+  height: 100%;
 }
-
-.vehicle-title {
+.veicle-title {
   margin-bottom: 0.25rem;
-}
-
-.vehicle-subtitle {
-  font-size: 0.875rem;
-  color: #6f6f6f;
-  margin-bottom: 0.25rem;
-}
-
-.vehicle-branch {
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
 }
 </style>

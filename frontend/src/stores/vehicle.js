@@ -5,11 +5,10 @@ export const useVehicleStore = defineStore("vehicle", {
   state: () => ({
     vehicles: [],
     selectedVehicle: null,
-    availableVehicles: [],
+    categories: [],
     loading: false,
     error: null,
   }),
-
   actions: {
     async fetchAll() {
       this.loading = true;
@@ -47,9 +46,21 @@ export const useVehicleStore = defineStore("vehicle", {
       }
     },
 
-    async getByReg(reg) {
+    async fetchByReg(reg) {
       const res = await api.get(`/cars/show?reg=${reg}`);
       this.selectedVehicle = res.data;
+      return res.data;
+    },
+
+    async fetchByCategory(category) {
+      const res = await api.get(`/cars/category?category=${category}`);
+      this.vehicles = res.data;
+      return res.data;
+    },
+
+    async fetchCategories() {
+      const res = await api.get("/cars/category-list");
+      this.categories = res.data;
       return res.data;
     },
 
@@ -70,8 +81,15 @@ export const useVehicleStore = defineStore("vehicle", {
     },
 
     async searchVehicles(params) {
-      const res = await api.get("/cars/search", { params });
-      return res.data;
+      this.loading = true;
+      try {
+        const res = await api.get("/cars/search", { params });
+        this.vehicles = res.data.results;
+      } catch (err) {
+        this.error = err.message;
+      } finally {
+        this.loading = false;
+      }
     },
 
     async editVehicle(reg, updates) {

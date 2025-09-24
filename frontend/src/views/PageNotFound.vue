@@ -1,8 +1,4 @@
-<script>
-export default {
-  name: "NotFoundPage",
-};
-</script>
+<script setup></script>
 
 <template>
   <div class="page-404">

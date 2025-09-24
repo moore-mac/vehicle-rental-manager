@@ -17,7 +17,7 @@ id,make,model,colour,vin,year,vrm,category,numberSeats,dayRate,status,fuelEconom
 16,Cadillac,Escalade,Turquoise,5N1AR2MM5DC957744,2012,AQ02ZZE,Family,8,45,SERVICEREQ,28.0,Manchester
 17,Toyota,Highlander,Blue,1D7RE3GK9BS434674,2012,FA29VYY,Van,3,50,DAMAGED,28.6,Manchester
 18,GMC,Suburban 1500,Aquamarine,WAUKH74F08N379442,1998,ER17EHX,Compact,4,40,SERVICEREQ,12.4,Manchester
-19,Mercedes-Benz,C-Class,Indigo,WAUVC58E22A036096,1997,JM00IOR,Van,3,50,RENTED,5.7,Manchester
+19,Mercedes-Benz,C-Class,Indigo,WAUVC58E22A036096,1997,JM00IOR,Van,3,50,AVAILABLE,5.7,Manchester
 20,Audi,A4,Teal,1GD21ZCG6BZ395895,1996,VH45CCH,Family,8,45,AVAILABLE,27.9,Bristol
 21,Chrysler,Cirrus,Purple,5FRYD4H66EB067250,1995,AT61DNU,Family,8,45,SERVICEREQ,8.0,Manchester
 22,Subaru,SVX,Aquamarine,JH4CU2F84DC451588,1992,KW63YEA,Sport,2,60,DAMAGED,7.7,Bristol
