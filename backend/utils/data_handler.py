@@ -27,13 +27,13 @@ def save_customers():
 
 def load_vehicles():
     global vehicles
-    with open("backend/vehicle.csv", "r") as f:
+    with open("backend/data/vehicle.csv", "r") as f:
         reader = csv.DictReader(f)
         vehicles = list(reader)
 
 
 def save_vehicles():
-    with open("backend/vehicle.csv", "w", newline="") as f:
+    with open("backend/data/vehicle.csv", "w", newline="") as f:
         if vehicles:
             writer = csv.DictWriter(f, fieldnames=vehicles[0].keys())
             writer.writeheader()
