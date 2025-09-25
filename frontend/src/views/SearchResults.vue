@@ -24,6 +24,8 @@ const statusLabelMap = {
 };
 
 onMounted(async () => {
+  console.log("ghello");
+
   try {
     let queryToUse = route.query;
 
@@ -44,7 +46,7 @@ onMounted(async () => {
 });
 
 function viewDetails(vehicle) {
-  router.push({ path: "/vehicle", query: { vrm: vehicle.vrm } });
+  router.push({ path: "/vehicles", query: { vrm: vehicle.vrm } });
 }
 </script>
 

@@ -1,7 +1,52 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useVehicleStore } from "@/stores/vehicle";
 
-const searchInput = ref("");
+const vehicleStore = useVehicleStore();
+const isLoading = ref(false);
+const showDropdown = ref(false);
+const searchWrapper = ref(null);
+
+function debounce(fn, delay = 400) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+async function doSearch(query) {
+  if (!query) {
+    vehicleStore.globalSearchResults = [];
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    await vehicleStore.globalSearch({ query, limit: 5 });
+  } catch (err) {
+    console.error("Search error:", err);
+    vehicleStore.globalSearchResults = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+const onSearch = debounce(doSearch, 400);
+
+function handleClickOutside(event) {
+  if (searchWrapper.value && !searchWrapper.value.contains(event.target)) {
+    showDropdown.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <template>
@@ -13,17 +58,39 @@ const searchInput = ref("");
       @click="$router.push('/')"
     />
 
-    <!-- TODO -->
-    <cv-search
-      v-model="searchInput"
-      label="search"
-      placeholder="Make, Model, Location..."
-      size="xl"
-      :light="true"
-      :expandable="false"
-      @input="searchInput = input"
-    >
-    </cv-search>
+    <!-- Search bar -->
+    <div class="nav-search-wrapper" ref="searchWrapper">
+      <cv-search
+        label="search"
+        placeholder="Make, Model, Location..."
+        size="xl"
+        :light="true"
+        :expandable="false"
+        @input="onSearch"
+        @focus="showDropdown = true"
+      />
+      <!-- Dropdown results -->
+      <ul
+        v-if="showDropdown && vehicleStore.globalSearchResults.length"
+        class="search-results"
+      >
+        <li
+          v-for="vehicle in vehicleStore.globalSearchResults"
+          :key="vehicle.id"
+          class="search-result-item"
+          @click="
+            $router.push({
+              path: '/vehicles',
+              query: { vrm: vehicle.vrm },
+            });
+            showDropdown = false;
+          "
+        >
+          <strong>{{ vehicle.make }} {{ vehicle.model }}</strong>
+          — {{ vehicle.vrm }} ({{ vehicle.branch }})
+        </li>
+      </ul>
+    </div>
 
     <div class="nav-bar-menu">
       <div class="nav-bar-menu-item" @click="$router.push('/my-fleet')">
@@ -69,7 +136,6 @@ const searchInput = ref("");
   display: flex;
   flex-direction: row;
   font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  /* padding-right: 2rem; */
 }
 .nav-bar-menu-item {
   width: fit-content;
@@ -83,5 +149,39 @@ const searchInput = ref("");
 .nav-bar-menu-item.disabled {
   color: gray;
   cursor: not-allowed;
+}
+
+/* Search wrapper and results */
+.nav-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--cds-border-subtle-01);
+  border-top: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 10000;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+.search-result-item {
+  padding: 1rem 1rem;
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.search-result-item:last-of-type {
+  border: none;
+}
+.search-result-item:hover {
+  background-color: #f4f4f4;
 }
 </style>

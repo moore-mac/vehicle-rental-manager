@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from "vue";
+import { onMounted, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useVehicleStore } from "@/stores/vehicle";
 
@@ -9,10 +9,22 @@ const vehicleStore = useVehicleStore();
 const selectedVehicle = computed(() => vehicleStore.selectedVehicle);
 
 onMounted(async () => {
-  vehicleStore.selectedVehicle = await vehicleStore.fetchByReg(
-    route.query.vrm || ""
-  );
+  fetchVehicle(route.query?.vrm || "");
 });
+
+watch(
+  () => route.query,
+  (newQuery, oldQuery) => {
+    fetchVehicle(newQuery?.vrm || "");
+  },
+  { deep: true }
+);
+
+async function fetchVehicle(vrm) {
+  if (vrm) {
+    vehicleStore.selectedVehicle = await vehicleStore.fetchByReg(vrm);
+  }
+}
 
 async function handleRent(vehicle) {
   if (vehicle && vehicle.status === "AVAILABLE") {

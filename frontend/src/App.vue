@@ -73,4 +73,7 @@ body {
   color: #0f62fe;
   cursor: pointer;
 }
+.bx--table-column-checkbox .bx--checkbox-label {
+  width: 1rem;
+}
 </style>

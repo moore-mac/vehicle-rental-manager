@@ -5,7 +5,6 @@ import IBMSecurity from "@carbon/icons-vue/es/ibm-security/16";
 import Time from "@carbon/icons-vue/es/time/16";
 
 import { onMounted, computed, ref } from "vue";
-import { useBranchStore } from "@/stores/branch";
 import { useVehicleStore } from "@/stores/vehicle";
 import { useRouter } from "vue-router";
 
@@ -13,7 +12,6 @@ import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 
 const router = useRouter();
-const branchStore = useBranchStore();
 const vehicleStore = useVehicleStore();
 
 const selectedBranch = ref(null);
@@ -27,12 +25,12 @@ const rules = {
 const v$ = useVuelidate(rules, { selectedBranch });
 
 onMounted(() => {
-  branchStore.fetchBranches();
+  vehicleStore.fetchBranches();
   vehicleStore.fetchCategories();
 });
 
 const branchOptions = computed(() =>
-  branchStore.branches.map((branch, index) => ({
+  vehicleStore.branches.map((branch, index) => ({
     name: `branch-${index + 1}`,
     label: branch,
     value: branch,

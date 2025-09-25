@@ -4,8 +4,10 @@ import api from "./axios";
 export const useVehicleStore = defineStore("vehicle", {
   state: () => ({
     vehicles: [],
+    globalSearchResults: [],
     selectedVehicle: null,
     categories: [],
+    branches: [],
     loading: false,
     error: null,
   }),
@@ -64,20 +66,44 @@ export const useVehicleStore = defineStore("vehicle", {
       return res.data;
     },
 
+    async fetchBranches() {
+      const res = await api.get("/cars/branch-list");
+      this.branches = res.data;
+    },
+
     async rentVehicle(reg) {
-      return await api.get(`/cars/rent?reg=${reg}`);
+      return await api.put(`/cars/rent?reg=${reg}`);
     },
 
     async returnVehicle(reg) {
-      return await api.get(`/cars/return?reg=${reg}`);
+      return await api.put(`/cars/return?reg=${reg}`);
     },
 
     async addVehicle(vehicleData) {
-      return await api.get("/cars/add", { params: vehicleData });
+      return await api.post("/cars/add", { params: vehicleData });
     },
 
-    async removeVehicle(reg) {
-      return await api.get(`/cars/remove?reg=${reg}`);
+    async removeVehicle(id) {
+      try {
+        const res = await api.post(`/cars/remove?id=${id}`);
+        this.vehicles = this.vehicles.filter((v) => v.id !== id);
+        return res.data;
+      } catch (err) {
+        console.error("Failed to remove vehicle:", err);
+        throw err;
+      }
+    },
+
+    async batchRemoveVehicles(arrayOfIds) {
+      try {
+        const res = await api.post("/cars/remove-batch", { ids: arrayOfIds });
+        this.vehicles = this.vehicles.filter((v) => !arrayOfIds.includes(v.id));
+
+        return res.data;
+      } catch (err) {
+        console.error("Failed to batch remove vehicles:", err);
+        throw err;
+      }
     },
 
     async searchVehicles(params) {
@@ -92,8 +118,20 @@ export const useVehicleStore = defineStore("vehicle", {
       }
     },
 
+    async globalSearch(params) {
+      this.loading = true;
+      try {
+        const res = await api.get("/cars/search", { params });
+        this.globalSearchResults = res.data.results;
+      } catch (err) {
+        this.error = err.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async editVehicle(reg, updates) {
-      return await api.get("/cars/edit", { params: { reg, ...updates } });
+      return await api.put("/cars/edit", { params: { reg, ...updates } });
     },
 
     async bulkAdd(vehicles) {
@@ -101,7 +139,7 @@ export const useVehicleStore = defineStore("vehicle", {
     },
 
     async batchEdit(updates) {
-      return await api.post("/cars/batch-edit", updates);
+      return await api.put("/cars/batch-edit", updates);
     },
   },
 });

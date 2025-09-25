@@ -17,7 +17,7 @@ def get_reg():
 
 ## Rent a specific vehicle
 ## curl "http://localhost:5000/cars/rent?reg=AW69DVJ"
-@vehicle_bp.route("/cars/rent", methods=["GET"])
+@vehicle_bp.route("/cars/rent", methods=["PUT"])
 def rent_vehicle():
     vehicle_reg = request.args.get("reg")
     for v in data.vehicles:
@@ -30,7 +30,7 @@ def rent_vehicle():
 
 ## Return a specific vehicle
 ## curl "http://localhost:5000/cars/return?reg=AW69DVJ"
-@vehicle_bp.route("/cars/return", methods=["GET"])
+@vehicle_bp.route("/cars/return", methods=["PUT"])
 def return_vehicle():
     vehicle_reg = request.args.get("reg")
     for v in data.vehicles:
@@ -43,7 +43,7 @@ def return_vehicle():
 
 ## Add a new vehicle to the rental fleet
 ## curl "http://localhost:5000/cars/add?id=501&make=Ford&model=Fiesta&colour=Grey&vin=B2IJ49B2B3UYIANSI&year=2018&vrm=654321&category=Compact&numberSeats=5&dayRate=50&status=AVAILABLE&fuelEconomy=29.5&branch=Luton"
-@vehicle_bp.route("/cars/add", methods=["GET"])
+@vehicle_bp.route("/cars/add", methods=["POST"])
 def add_vehicle():
     new_vehicle = {
         "id": request.args.get("id"),
@@ -65,14 +65,57 @@ def add_vehicle():
     return jsonify({"message": "Vehicle added successfully"})
 
 
-## Remove a specific vehicle from the rental fleet
-## curl "http://localhost:5000/cars/remove?reg=AW69DVJ"
-@vehicle_bp.route("/cars/remove", methods=["GET"])
+## Remove a specific vehicle from the rental fleet (by ID)
+## curl "http://localhost:5000/cars/remove?id=123"
+@vehicle_bp.route("/cars/remove", methods=["POST"])
 def remove_vehicle():
-    vehicle_reg = request.args.get("reg")
-    data.vehicles[:] = [v for v in data.vehicles if v["vrm"].strip() != vehicle_reg]
+    vehicle_id = request.args.get("id")
+    if not vehicle_id:
+        return jsonify({"error": "Missing 'id' parameter"}), 400
+
+    before_count = len(data.vehicles)
+    data.vehicles[:] = [v for v in data.vehicles if str(v.get("id")) != str(vehicle_id)]
+    after_count = len(data.vehicles)
+
+    if before_count == after_count:
+        return jsonify({"message": f"No vehicle found with id={vehicle_id}"}), 404
+
     data.save_vehicles()
-    return jsonify({"message": "Vehicle removed successfully"})
+    return jsonify({"message": f"Vehicle {vehicle_id} removed successfully"})
+
+
+## Remove multiple vehicles from the rental fleet (by ID)
+## curl -X POST "http://localhost:5000/cars/remove-batch"
+## {"ids": [1, 2, 3]}
+@vehicle_bp.route("/cars/remove-batch", methods=["POST"])
+def remove_vehicles_batch():
+    payload = request.get_json(force=True, silent=True)
+    if not payload or "ids" not in payload:
+        return jsonify({"error": "Missing 'ids' list in request body"}), 400
+
+    ids_to_remove = set(str(i) for i in payload["ids"])
+    if not ids_to_remove:
+        return jsonify({"error": "Empty 'ids' list"}), 400
+
+    before_count = len(data.vehicles)
+    data.vehicles[:] = [
+        v for v in data.vehicles if str(v.get("id")) not in ids_to_remove
+    ]
+    after_count = len(data.vehicles)
+    removed_count = before_count - after_count
+
+    if removed_count == 0:
+        return jsonify({"message": "No vehicles matched given IDs"}), 404
+
+    data.save_vehicles()
+
+    return jsonify(
+        {
+            "message": f"Removed {removed_count} vehicles successfully",
+            "removed_count": removed_count,
+            "remaining": after_count,
+        }
+    )
 
 
 ## Show all vehicles
@@ -141,7 +184,7 @@ def get_branches():
 
 
 ## Search vehicles by various criteria
-## curl "http://localhost:5000/cars/search?query=Toyota&branch=London&status=AVAILABLE"
+## curl "http://localhost:5000/cars/search?query=Toyota&branch=London&status=AVAILABLE&limit=10"
 @vehicle_bp.route("/cars/search", methods=["GET"])
 def search_vehicles():
     query = request.args.get("query", "").strip().lower()
@@ -149,6 +192,7 @@ def search_vehicles():
     status = request.args.get("status")
     category = request.args.get("category")
     max_price = request.args.get("max_price")
+    limit = request.args.get("limit", type=int)
 
     results = []
     for vehicle in data.vehicles:
@@ -178,6 +222,10 @@ def search_vehicles():
         if matches:
             results.append(vehicle)
 
+    # Apply limit if specified
+    if limit is not None and limit > 0:
+        results = results[:limit]
+
     filters_used = {}
     if query:
         filters_used["query"] = query
@@ -189,6 +237,8 @@ def search_vehicles():
         filters_used["category"] = category
     if max_price:
         filters_used["max_price"] = max_price
+    if limit:
+        filters_used["limit"] = limit
 
     return jsonify(
         {
