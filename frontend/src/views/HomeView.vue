@@ -74,7 +74,7 @@ const scrollToId = (id) => {
         <div class="landing-form">
           <h1>Find a Ride</h1>
           <cv-combo-box
-            title="Collect From *"
+            title="Collect From"
             label="City"
             :options="vehicleStore.branchOptions"
             v-model="selectedBranch"
@@ -267,6 +267,9 @@ const scrollToId = (id) => {
   .landing-title-row {
     margin-top: 10rem;
     text-align: center;
+  }
+  .landing-title {
+    margin-top: 6rem;
   }
 }
 </style>
