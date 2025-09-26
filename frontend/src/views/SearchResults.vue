@@ -12,6 +12,10 @@ const results = computed(() => vehicleStore.vehicles);
 
 onMounted(async () => {
   await vehicleStore.searchVehicles(route.query);
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 });
 
 onBeforeRouteLeave(() => {
