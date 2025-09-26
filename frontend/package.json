@@ -14,6 +14,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@carbon/charts-vue": "^1.27.0",
     "@carbon/styles": "^1.90.0",
     "@carbon/vue": "^3.0.27",
     "@vuelidate/core": "^2.0.3",

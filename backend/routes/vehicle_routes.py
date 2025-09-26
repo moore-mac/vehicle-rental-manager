@@ -42,27 +42,40 @@ def return_vehicle():
 
 
 ## Add a new vehicle to the rental fleet
-## curl "http://localhost:5000/cars/add?id=501&make=Ford&model=Fiesta&colour=Grey&vin=B2IJ49B2B3UYIANSI&year=2018&vrm=654321&category=Compact&numberSeats=5&dayRate=50&status=AVAILABLE&fuelEconomy=29.5&branch=Luton"
+## curl -X POST "http://localhost:5000/cars/add"
+## {"make":"Ford","model":"Fiesta","colour":"Grey","vin":"B2IJ49B2B3UYIANSI","year":2018,"vrm":"654321","category":"Compact","numberSeats":5,"dayRate":50,"status":"AVAILABLE","fuelEconomy":29.5,"branch":"Luton"}
 @vehicle_bp.route("/cars/add", methods=["POST"])
 def add_vehicle():
+    payload = request.get_json(force=True, silent=True)
+    if not payload:
+        return jsonify({"error": "Missing request body"}), 400
+
+    # assign a new id dynamically and set to string for csv
+    next_id = str(max((int(v.get("id", 0)) for v in data.vehicles), default=0) + 1)
+
     new_vehicle = {
-        "id": request.args.get("id"),
-        "make": request.args.get("make"),
-        "model": request.args.get("model"),
-        "colour": request.args.get("colour"),
-        "vin": request.args.get("vin"),
-        "year": request.args.get("year"),
-        "vrm": request.args.get("vrm"),
-        "category": request.args.get("category"),
-        "numberSeats": request.args.get("numberSeats"),
-        "dayRate": request.args.get("dayRate"),
-        "status": request.args.get("status", "AVAILABLE"),
-        "fuelEconomy": request.args.get("fuelEconomy"),
-        "branch": request.args.get("branch"),
+        "id": next_id,
+        "make": payload.get("make"),
+        "model": payload.get("model"),
+        "colour": payload.get("colour"),
+        "vin": payload.get("vin"),
+        "year": payload.get("year"),
+        "vrm": payload.get("vrm"),
+        "category": payload.get("category"),
+        "numberSeats": payload.get("numberSeats"),
+        "dayRate": payload.get("dayRate"),
+        "status": payload.get("status", "AVAILABLE"),
+        "fuelEconomy": payload.get("fuelEconomy"),
+        "branch": payload.get("branch"),
     }
+
     data.vehicles.append(new_vehicle)
     data.save_vehicles()
-    return jsonify({"message": "Vehicle added successfully"})
+
+    return (
+        jsonify({"message": "Vehicle added successfully", "vehicle": new_vehicle}),
+        201,
+    )
 
 
 ## Remove a specific vehicle from the rental fleet (by ID)
@@ -183,6 +196,17 @@ def get_branches():
     return jsonify(branches)
 
 
+## Get list of statuses
+## curl "http://localhost:5000/cars/status-list"
+@vehicle_bp.route("/cars/status-list", methods=["GET"])
+def get_statuses():
+    statuses = []
+    for v in data.vehicles:
+        if v["status"] not in statuses:
+            statuses.append(v["status"])
+    return jsonify(statuses)
+
+
 ## Search vehicles by various criteria
 ## curl "http://localhost:5000/cars/search?query=Toyota&branch=London&status=AVAILABLE&limit=10"
 @vehicle_bp.route("/cars/search", methods=["GET"])
@@ -199,10 +223,25 @@ def search_vehicles():
         matches = True
 
         if query:
-            search_fields = ["make", "model", "colour", "vrm", "category", "branch"]
-            text_match = any(
-                query in str(vehicle.get(f, "")).lower() for f in search_fields
+            # combine make + model for better matching
+            combined_make_model = (
+                f"{vehicle.get('make', '')} {vehicle.get('model', '')}".lower()
             )
+
+            search_fields = [
+                "make",
+                "model",
+                "colour",
+                "vrm",
+                "vin",
+                "category",
+                "branch",
+            ]
+            text_match = (
+                any(query in str(vehicle.get(f, "")).lower() for f in search_fields)
+                or query in combined_make_model
+            )
+
             matches = matches and text_match
 
         if branch:
@@ -222,7 +261,7 @@ def search_vehicles():
         if matches:
             results.append(vehicle)
 
-    # Apply limit if specified
+    # use limit if specified
     if limit is not None and limit > 0:
         results = results[:limit]
 

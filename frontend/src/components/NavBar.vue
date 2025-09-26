@@ -155,10 +155,11 @@ onBeforeUnmount(() => {
 .nav-search-wrapper {
   position: relative;
   flex: 1;
-  max-width: 400px;
+  /* max-width: 400px; */
 }
 .search-results {
   position: absolute;
+  width: 100%;
   top: 100%;
   left: 0;
   right: 0;

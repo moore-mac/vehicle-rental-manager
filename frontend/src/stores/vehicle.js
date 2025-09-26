@@ -8,31 +8,59 @@ export const useVehicleStore = defineStore("vehicle", {
     selectedVehicle: null,
     categories: [],
     branches: [],
-    loading: false,
-    error: null,
+    statuses: [],
+    statusColourMap: {
+      AVAILABLE: "green",
+      RENTED: "red",
+      SERVICEREQ: "red",
+      DAMAGED: "red",
+    },
+    statusLabelMap: {
+      AVAILABLE: "Available",
+      RENTED: "Rented",
+      SERVICEREQ: "Service Required",
+      DAMAGED: "Damaged",
+    },
+    filters: {},
   }),
+  getters: {
+    branchOptions: (state) =>
+      state.branches.map((branch, index) => ({
+        name: `branch-${index + 1}`,
+        label: branch,
+        value: branch,
+      })),
+
+    categoryOptions: (state) =>
+      state.categories.map((category, index) => ({
+        name: `category-${index + 1}`,
+        label: category,
+        value: category,
+      })),
+
+    statusOptions: (state) =>
+      state.statuses.map((status, index) => ({
+        name: `status-${index + 1}`,
+        label: state.statusLabelMap[status],
+        value: status,
+      })),
+  },
   actions: {
     async fetchAll() {
-      this.loading = true;
       try {
         const res = await api.get("/cars/all");
         this.vehicles = res.data;
       } catch (err) {
-        this.error = err.message;
-      } finally {
-        this.loading = false;
+        console.error("Failed to fetch all vehicles:", err);
       }
     },
 
     async fetchAvailable() {
-      this.loading = true;
       try {
         const res = await api.get("/cars/available");
         this.availableVehicles = res.data;
       } catch (err) {
-        this.error = err.message;
-      } finally {
-        this.loading = false;
+        console.error("Failed to fetch available vehicles:", err);
       }
     },
 
@@ -42,45 +70,94 @@ export const useVehicleStore = defineStore("vehicle", {
           params: { branch },
         });
         this.vehicles = res.data;
-      } catch (error) {
-        console.error("Failed to fetch vehicles:", error);
-        this.vehiclesByBranch = {};
+      } catch (err) {
+        console.error("Failed to fetch vehicles by branch:", err);
       }
     },
 
     async fetchByReg(reg) {
-      const res = await api.get(`/cars/show?reg=${reg}`);
-      this.selectedVehicle = res.data;
-      return res.data;
+      try {
+        const res = await api.get(`/cars/show?reg=${reg}`);
+        this.selectedVehicle = res.data;
+        return res.data;
+      } catch (err) {
+        console.error("Failed to fetch vehicle by reg:", err);
+      }
     },
 
     async fetchByCategory(category) {
-      const res = await api.get(`/cars/category?category=${category}`);
-      this.vehicles = res.data;
-      return res.data;
+      try {
+        const res = await api.get(`/cars/category?category=${category}`);
+        this.vehicles = res.data;
+        return res.data;
+      } catch (err) {
+        console.error("Failed to fetch vehicles by category:", err);
+      }
     },
 
     async fetchCategories() {
-      const res = await api.get("/cars/category-list");
-      this.categories = res.data;
-      return res.data;
+      try {
+        const res = await api.get("/cars/category-list");
+        this.categories = res.data;
+        return res.data;
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
     },
 
     async fetchBranches() {
-      const res = await api.get("/cars/branch-list");
-      this.branches = res.data;
+      try {
+        const res = await api.get("/cars/branch-list");
+        this.branches = res.data;
+      } catch (err) {
+        console.error("Failed to fetch branches:", err);
+      }
+    },
+
+    async fetchStatuses() {
+      try {
+        const res = await api.get("/cars/status-list");
+        this.statuses = res.data;
+      } catch (err) {
+        console.error("Failed to fetch statuses:", err);
+      }
     },
 
     async rentVehicle(reg) {
-      return await api.put(`/cars/rent?reg=${reg}`);
+      try {
+        return await api.put(`/cars/rent?reg=${reg}`);
+      } catch (err) {
+        console.error("Failed to rent vehicle:", err);
+      }
     },
 
     async returnVehicle(reg) {
-      return await api.put(`/cars/return?reg=${reg}`);
+      try {
+        return await api.put(`/cars/return?reg=${reg}`);
+      } catch (err) {
+        console.error("Failed to return vehicle:", err);
+      }
     },
 
     async addVehicle(vehicleData) {
-      return await api.post("/cars/add", { params: vehicleData });
+      try {
+        // using csv, so convert all values to strings
+        const payload = Object.fromEntries(
+          Object.entries(vehicleData).map(([key, value]) => [
+            key,
+            String(value ?? ""),
+          ])
+        );
+
+        const res = await api.post("/cars/add", payload);
+        const newVehicle = res.data.vehicle;
+
+        this.vehicles.push(newVehicle);
+
+        return newVehicle;
+      } catch (err) {
+        console.error("Failed to add vehicle:", err);
+      }
     },
 
     async removeVehicle(id) {
@@ -90,7 +167,6 @@ export const useVehicleStore = defineStore("vehicle", {
         return res.data;
       } catch (err) {
         console.error("Failed to remove vehicle:", err);
-        throw err;
       }
     },
 
@@ -98,48 +174,52 @@ export const useVehicleStore = defineStore("vehicle", {
       try {
         const res = await api.post("/cars/remove-batch", { ids: arrayOfIds });
         this.vehicles = this.vehicles.filter((v) => !arrayOfIds.includes(v.id));
-
         return res.data;
       } catch (err) {
         console.error("Failed to batch remove vehicles:", err);
-        throw err;
       }
     },
 
     async searchVehicles(params) {
-      this.loading = true;
       try {
         const res = await api.get("/cars/search", { params });
         this.vehicles = res.data.results;
       } catch (err) {
-        this.error = err.message;
-      } finally {
-        this.loading = false;
+        console.error("Failed to search vehicles:", err);
       }
     },
 
     async globalSearch(params) {
-      this.loading = true;
       try {
         const res = await api.get("/cars/search", { params });
         this.globalSearchResults = res.data.results;
       } catch (err) {
-        this.error = err.message;
-      } finally {
-        this.loading = false;
+        console.error("Failed to run global search:", err);
       }
     },
 
     async editVehicle(reg, updates) {
-      return await api.put("/cars/edit", { params: { reg, ...updates } });
+      try {
+        return await api.put("/cars/edit", { params: { reg, ...updates } });
+      } catch (err) {
+        console.error("Failed to edit vehicle:", err);
+      }
     },
 
     async bulkAdd(vehicles) {
-      return await api.post("/cars/bulk-add", vehicles);
+      try {
+        return await api.post("/cars/bulk-add", vehicles);
+      } catch (err) {
+        console.error("Failed to bulk add vehicles:", err);
+      }
     },
 
     async batchEdit(updates) {
-      return await api.put("/cars/batch-edit", updates);
+      try {
+        return await api.put("/cars/batch-edit", updates);
+      } catch (err) {
+        console.error("Failed to batch edit vehicles:", err);
+      }
     },
   },
 });

@@ -45,6 +45,7 @@ onMounted(() => {
 </template>
 
 <style>
+@import "@carbon/charts-vue/styles.css";
 body {
   background-color: var(--cds-background) !important;
 }

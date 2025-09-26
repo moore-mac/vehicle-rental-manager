@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import CarbonVue3 from "@carbon/vue";
+import ChartsVue from "@carbon/charts-vue";
 
 import App from "./App.vue";
 import router from "./router";
@@ -13,5 +14,6 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(CarbonVue3);
+app.use(ChartsVue);
 
 app.mount("#app");

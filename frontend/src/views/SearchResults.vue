@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { useVehicleStore } from "@/stores/vehicle";
+import SideBarFilter from "@/components/SideBarFilter.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -9,50 +10,26 @@ const route = useRoute();
 const vehicleStore = useVehicleStore();
 const results = computed(() => vehicleStore.vehicles);
 
-const statusColourMap = {
-  AVAILABLE: "green",
-  RENTED: "red",
-  SERVICEREQ: "red",
-  DAMAGED: "red",
-};
-
-const statusLabelMap = {
-  AVAILABLE: "Available",
-  RENTED: "Rented",
-  SERVICEREQ: "Service Required",
-  DAMAGED: "Damaged",
-};
-
 onMounted(async () => {
-  console.log("ghello");
+  await vehicleStore.searchVehicles(route.query);
+});
 
-  try {
-    let queryToUse = route.query;
-
-    if (!queryToUse || Object.keys(queryToUse).length === 0) {
-      const savedQuery = localStorage.getItem("previousRouteQuery");
-      if (savedQuery) {
-        queryToUse = JSON.parse(savedQuery);
-        router.replace({ path: "/results", query: queryToUse });
-      }
-    } else {
-      localStorage.setItem("previousRouteQuery", JSON.stringify(queryToUse));
-    }
-
-    await vehicleStore.searchVehicles(queryToUse);
-  } catch (error) {
-    console.error("Failed to fetch vehicles:", error);
-  }
+onBeforeRouteLeave(() => {
+  localStorage.setItem("previousRouteQuery", JSON.stringify(route.query));
 });
 
 function viewDetails(vehicle) {
   router.push({ path: "/vehicles", query: { vrm: vehicle.vrm } });
 }
+
+async function onFiltersChanged(filters) {
+  await vehicleStore.searchVehicles(filters);
+}
 </script>
 
 <template>
   <cv-grid>
-    <cv-row class="search-results-row">
+    <cv-row style="margin-bottom: 1rem">
       <cv-column>
         <cv-breadcrumb :no-trailing-slash="false">
           <cv-breadcrumb-item @click="$router.push('/')">
@@ -61,7 +38,12 @@ function viewDetails(vehicle) {
         </cv-breadcrumb>
 
         <h1>Search Results</h1>
+        <p>{{ results.length }} vehicles found</p>
+      </cv-column>
+    </cv-row>
 
+    <cv-row class="search-results-row">
+      <cv-column>
         <!-- Loading -->
         <div class="loading-wheel" v-if="!results || results.length === 0">
           <cv-loading description="Loading vehicles..." />
@@ -69,10 +51,11 @@ function viewDetails(vehicle) {
 
         <!-- Results -->
         <div v-else>
-          <p class="results-summary">{{ results.length }} vehicles found</p>
-
           <cv-row>
-            <cv-column class="results-tile-container">
+            <cv-column :lg="4" :md="3" :sm="4">
+              <SideBarFilter @update:filters="onFiltersChanged" />
+            </cv-column>
+            <cv-column class="results-tile-container" :lg="8" :md="5" :sm="4">
               <cv-tile
                 v-for="vehicle in results"
                 :key="vehicle.vrm"
@@ -89,8 +72,8 @@ function viewDetails(vehicle) {
                 <p>Branch: {{ vehicle.branch }}</p>
                 <cv-tag
                   style="cursor: pointer"
-                  :kind="statusColourMap[vehicle.status]"
-                  :label="statusLabelMap[vehicle.status]"
+                  :kind="vehicleStore.statusColourMap[vehicle.status]"
+                  :label="vehicleStore.statusLabelMap[vehicle.status]"
                 />
               </cv-tile>
             </cv-column>
@@ -110,12 +93,8 @@ function viewDetails(vehicle) {
   top: 40%;
   left: 45%;
 }
-.results-summary {
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-  color: #525252;
-}
 .results-tile-container {
+  margin-top: 1rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;

@@ -1,24 +1,52 @@
 <script setup>
-import { onMounted, computed, watch } from "vue";
-import { useRoute } from "vue-router";
+import { onMounted, computed, watch, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useVehicleStore } from "@/stores/vehicle";
 
 const route = useRoute();
+const router = useRouter();
 const vehicleStore = useVehicleStore();
 
 const selectedVehicle = computed(() => vehicleStore.selectedVehicle);
 
 onMounted(async () => {
-  fetchVehicle(route.query?.vrm || "");
+  await fetchVehicle(route.query?.vrm || "");
+});
+
+onUnmounted(() => {
+  localStorage.removeItem("previousRouteQuery");
 });
 
 watch(
   () => route.query,
-  (newQuery, oldQuery) => {
-    fetchVehicle(newQuery?.vrm || "");
+  async (newQuery) => {
+    await fetchVehicle(newQuery?.vrm || "");
   },
   { deep: true }
 );
+
+function goBack() {
+  const savedQuery = localStorage.getItem("previousRouteQuery");
+  let query = {};
+
+  if (savedQuery) {
+    try {
+      query = JSON.parse(savedQuery);
+    } catch (e) {
+      console.error("Invalid saved query:", e);
+      query = {};
+    }
+  }
+
+  if (query && Object.keys(query).length > 0) {
+    router.push({
+      path: "/results",
+      query,
+    });
+  } else {
+    router.push({ path: "/results" });
+  }
+}
 
 async function fetchVehicle(vrm) {
   if (vrm) {
@@ -53,14 +81,7 @@ async function handleReturn(vehicle) {
             >Home</cv-breadcrumb-item
           >
 
-          <cv-breadcrumb-item
-            @click="
-              $router.push({
-                path: '/results',
-              })
-            "
-            >Search</cv-breadcrumb-item
-          >
+          <cv-breadcrumb-item @click="goBack">Search</cv-breadcrumb-item>
         </cv-breadcrumb>
 
         <h1 class="page-title">{{ route.query?.vrm }}</h1>

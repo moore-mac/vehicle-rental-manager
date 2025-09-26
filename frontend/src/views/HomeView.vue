@@ -4,50 +4,41 @@ import Car from "@carbon/icons-vue/es/car/16";
 import IBMSecurity from "@carbon/icons-vue/es/ibm-security/16";
 import Time from "@carbon/icons-vue/es/time/16";
 
-import { onMounted, computed, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useVehicleStore } from "@/stores/vehicle";
 import { useRouter } from "vue-router";
-
-import useVuelidate from "@vuelidate/core";
-import { required } from "@vuelidate/validators";
+import ReviewSlider from "@/components/ReviewSlider.vue";
 
 const router = useRouter();
 const vehicleStore = useVehicleStore();
 
 const selectedBranch = ref(null);
+const selectedCategory = ref(null);
 const dateRange = ref([null, null]);
 const driverOver25 = ref(false);
 
-const rules = {
-  selectedBranch: { required },
-};
-
-const v$ = useVuelidate(rules, { selectedBranch });
-
-onMounted(() => {
-  vehicleStore.fetchBranches();
-  vehicleStore.fetchCategories();
+onMounted(async () => {
+  await vehicleStore.fetchBranches();
+  await vehicleStore.fetchCategories();
 });
 
-const branchOptions = computed(() =>
-  vehicleStore.branches.map((branch, index) => ({
-    name: `branch-${index + 1}`,
-    label: branch,
-    value: branch,
-  }))
-);
-
 async function handleSubmit() {
-  v$.value.$touch();
-  if (!v$.value.$invalid) {
-    try {
-      router.push({
-        path: "/results",
-        query: { branch: selectedBranch.value },
-      });
-    } catch (error) {
-      console.log(error);
+  try {
+    const query = {};
+
+    if (selectedBranch.value) {
+      query.branch = selectedBranch.value;
     }
+    if (selectedCategory.value) {
+      query.category = selectedCategory.value;
+    }
+
+    router.push({
+      path: "/results",
+      query,
+    });
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -80,19 +71,21 @@ const scrollToId = (id) => {
 
     <cv-row class="landing-hero-row">
       <cv-column :lg="{ span: 6, offset: 6 }" :md="8" :sm="4">
-        <cv-form @submit.prevent="" class="landing-form">
+        <div class="landing-form">
           <h1>Find a Ride</h1>
           <cv-combo-box
             title="Collect From *"
             label="City"
-            :options="branchOptions"
+            :options="vehicleStore.branchOptions"
             v-model="selectedBranch"
-            :invalid-message="
-              v$.selectedBranch.$error ? 'Branch is required' : ''
-            "
           ></cv-combo-box>
 
-          <!-- TODO add selected category -->
+          <cv-combo-box
+            title="Category"
+            label="Compact, SUV, etc."
+            :options="vehicleStore.categoryOptions"
+            v-model="selectedCategory"
+          ></cv-combo-box>
 
           <cv-date-picker
             dateLabel="Date From"
@@ -117,7 +110,7 @@ const scrollToId = (id) => {
               >Why Choose Us?</cv-button
             >
           </div>
-        </cv-form>
+        </div>
       </cv-column>
     </cv-row>
 
@@ -172,8 +165,7 @@ const scrollToId = (id) => {
       </cv-column>
     </cv-row>
 
-    <!-- TODO replace with something else -->
-    <img src="/src/assets/stay.png" style="width: 100%" />
+    <ReviewSlider />
   </cv-grid>
 </template>
 
@@ -231,7 +223,7 @@ const scrollToId = (id) => {
 }
 .landing-tile-text {
   color: var(--cds-interactive);
-  font-weight: 300;
+  font-weight: 350;
 }
 .landing-selling-points-container {
   display: grid;
