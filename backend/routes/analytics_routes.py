@@ -5,7 +5,7 @@ analytics_bp = Blueprint("analytics", __name__)
 
 
 ## Rental Utilisation for a given branch
-## curl "http://localhost:5000/analytics/rental-utilisation?branch=Manchester"
+## curl "http://localhost:5000/analytics/rental-utilisation-by-branch?branch=Manchester"
 @analytics_bp.route("/analytics/rental-utilisation-by-branch", methods=["GET"])
 def rental_utilisation():
     branch = request.args.get("branch")
@@ -131,6 +131,8 @@ def issues_percentage():
     return jsonify(results)
 
 
+## Get overall fleet analytics
+## curl "http://localhost:5000/analytics/fleet"
 @analytics_bp.route("/analytics/fleet", methods=["GET"])
 def get_fleet_analytics():
     total_vehicles = len(data.vehicles)
@@ -243,7 +245,7 @@ def get_branch_analytics():
     )
 
 
-## Get rental analytics
+## Get rental analytics across all branches
 ## curl "http://localhost:5000/analytics/rentals"
 @analytics_bp.route("/analytics/rentals", methods=["GET"])
 def get_rental_analytics():
