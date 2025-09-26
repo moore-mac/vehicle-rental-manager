@@ -86,10 +86,8 @@ async function handleReturn(vehicle) {
 
         <h1 class="page-title">{{ route.query?.vrm }}</h1>
 
-        <!-- Loading state -->
         <p v-if="!selectedVehicle">Loading vehicle...</p>
 
-        <!-- Vehicle card -->
         <div v-else class="vehicle-card">
           <h2 class="vehicle-title">
             {{ selectedVehicle?.make }} {{ selectedVehicle?.model }} ({{

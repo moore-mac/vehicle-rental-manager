@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
     <div class="nav-search-wrapper" ref="searchWrapper">
       <cv-search
         label="search"
-        placeholder="Make, Model, Location..."
+        placeholder="Make, Model, Registration, etc."
         size="xl"
         :light="true"
         :expandable="false"

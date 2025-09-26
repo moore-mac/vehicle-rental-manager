@@ -77,33 +77,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="reviews-carousel">
+  <div class="carousel-container">
     <h1>Customer Reviews</h1>
-
-    <div class="carousel-container">
-      <div
-        class="carousel-track"
-        :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      >
-        <div
-          class="review-card"
-          v-for="(review, index) in reviews"
-          :key="index"
-        >
-          <p class="quote">“{{ review.text }}”</p>
-          <div class="reviewer">
-            <strong>{{ review.name }}</strong> -
-            <span>{{ review.location }}</span>
-          </div>
-          <div class="rating">
-            <span
-              v-for="rating in 5"
-              :key="rating"
-              class="star"
-              :class="{ filled: rating <= review.rating }"
-              >★</span
-            >
-          </div>
+    <div
+      class="carousel-track"
+      :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+    >
+      <div class="review-card" v-for="(review, index) in reviews" :key="index">
+        <p class="quote">“{{ review.text }}”</p>
+        <div class="reviewer">
+          <strong>{{ review.name }}</strong> -
+          <span>{{ review.location }}</span>
+        </div>
+        <div class="rating">
+          <span
+            v-for="rating in 5"
+            :key="rating"
+            class="star"
+            :class="{ filled: rating <= review.rating }"
+            >★</span
+          >
         </div>
       </div>
     </div>
@@ -111,15 +104,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.reviews-carousel {
+.carousel-container {
   max-width: 800px;
   margin: 3rem auto;
   padding: 1rem;
   text-align: center;
-  position: relative;
-}
-
-.carousel-container {
   overflow: hidden;
   position: relative;
 }
@@ -136,14 +125,6 @@ onMounted(() => {
 
 .quote {
   font-style: italic;
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-}
-
-.reviewer {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 0.5rem;
 }
 
 .rating .star {
@@ -153,31 +134,5 @@ onMounted(() => {
 
 .rating .star.filled {
   color: #fbbf24;
-}
-
-button.prev,
-button.next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  font-size: 2rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-button.prev {
-  left: 0.5rem;
-}
-button.next {
-  right: 0.5rem;
-}
-
-button.prev:hover,
-button.next:hover {
-  background: rgba(0, 0, 0, 0.8);
 }
 </style>

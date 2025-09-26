@@ -50,7 +50,7 @@ watch(
 
     <cv-combo-box
       title="Status"
-      label="Available, Rented, Maintenance"
+      label="Available, Rented, etc."
       :options="vehicleStore.statusOptions"
       v-model="vehicleStore.filters.status"
       :is-light="false"

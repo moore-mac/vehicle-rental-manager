@@ -1,6 +1,6 @@
 id,make,model,colour,vin,year,vrm,category,numberSeats,dayRate,status,fuelEconomy,branch
 1,Honda,Civic,Mauv,5GAKRAED8BJ988062,2006,JA82VXV,Compact,4,40,AVAILABLE,16.6,Bristol
-2,Lincoln,Navigator,Fuscia,WAUGGBFC6CN829005,2002,ID79CGU,Budget,5,20,AVAILABLE,24.8,Manchester
+2,Lincoln,Navigator,Fuscia,WAUGGBFC6CN829005,2002,ID79CGU,Budget,5,20,RENTED,24.8,Manchester
 3,Nissan,Rogue,Blue,JN1CV6AP9CM644206,2009,PH12SKL,Budget,5,20,SERVICEREQ,13.0,Luton
 4,Saturn,S-Series,Maroon,1D7CW2GK7AS672499,2000,TD97LNQ,Budget,5,20,SERVICEREQ,20.3,Manchester
 5,Volvo,V40,Aquamarine,JTHBL1EF2D5952377,2002,BL49QBI,Truck,2,90,DAMAGED,13.9,Bristol
@@ -378,7 +378,6 @@ id,make,model,colour,vin,year,vrm,category,numberSeats,dayRate,status,fuelEconom
 377,Acura,NSX,Mauv,3VWML7AJ9CM697594,2004,QR49XKW,Compact,4,40,SERVICEREQ,13.8,Luton
 378,Chevrolet,Camaro,Green,WBABV13416J630172,1972,BS34GPC,Coupe,4,55,SERVICEREQ,30.0,Bristol
 379,Ford,E350,Orange,SCBGR3ZA3CC501634,2005,FZ03YSF,Family,8,45,DAMAGED,7.4,Luton
-380,Volvo,850,Turquoise,WBA6B8C51ED461375,1997,HS25NYX,Budget,5,20,AVAILABLE,19.9,Manchester
 381,BMW,X3,Pink,WAURD68D61A815737,2008,HI22WGW,Sport,2,60,SERVICEREQ,15.0,Luton
 382,Hyundai,XG350,Teal,WAUDH74F67N188941,2005,JE94WXT,SUV,6,80,SERVICEREQ,22.8,Manchester
 383,Mitsubishi,Raider,Pink,KM8NU4CC7CU176172,2008,SY27AUQ,Van,3,50,DAMAGED,5.7,Manchester
@@ -499,3 +498,4 @@ id,make,model,colour,vin,year,vrm,category,numberSeats,dayRate,status,fuelEconom
 498,Maybach,62,Orange,WBAYP9C53DD521655,2009,AE53LFB,Sport,2,60,SERVICEREQ,17.6,Manchester
 499,Ford,Focus,Blue,1N6AA0CH1DN919255,2010,CT86UXN,Family,8,45,AVAILABLE,8.4,Luton
 500,Chevrolet,Corvette,Khaki,TRUTC28NX21671971,1957,IE41LJB,Family,8,45,SERVICEREQ,18.0,Luton
+501,tt,tft,ftftt,bbwhdbwd,1902,tedstTEt,Budget,1,0,AVAILABLE,0,Manchester

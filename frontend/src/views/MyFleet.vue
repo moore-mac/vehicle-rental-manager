@@ -311,7 +311,7 @@ async function onFiltersChanged(filters) {
 
         <cv-combo-box
           title="Status *"
-          label="Available, Rented, Maintenance"
+          label="Available, Rented, etc."
           :options="vehicleStore.statusOptions"
           v-model="newVehicle.status"
           :invalid-message="v$.status.$error ? 'Status is required' : ''"

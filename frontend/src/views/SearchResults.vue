@@ -44,12 +44,10 @@ async function onFiltersChanged(filters) {
 
     <cv-row class="search-results-row">
       <cv-column>
-        <!-- Loading -->
         <div class="loading-wheel" v-if="!results || results.length === 0">
           <cv-loading description="Loading vehicles..." />
         </div>
 
-        <!-- Results -->
         <div v-else>
           <cv-row>
             <cv-column :lg="4" :md="3" :sm="4">
@@ -70,6 +68,7 @@ async function onFiltersChanged(filters) {
                   Year: {{ vehicle.year }} · Seats: {{ vehicle.numberSeats }}
                 </p>
                 <p>Branch: {{ vehicle.branch }}</p>
+                <p>Registration: {{ vehicle.vrm }}</p>
                 <cv-tag
                   style="cursor: pointer"
                   :kind="vehicleStore.statusColourMap[vehicle.status]"
