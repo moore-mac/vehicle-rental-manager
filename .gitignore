@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+node_modules/
+
+dist/
+build/
+
+npm-debug.log*
+
+.vscode/
+
+.DS_Store
